@@ -1,0 +1,93 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{latexsym}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{enumitem}
+\setlength{\parindent}{0pt}
+\geometry{a4paper,scale=0.80}
+\begin{document}
+    \textbf{3.10 Net Present Value. Assume that your firm wants to choose between two project options:}\\[0.5em]
+    \hspace*{0.8cm}
+    \begin{minipage}{0.6\textwidth}
+        \textbf{Project A:} \$500,000 invested today will yield an expected income stream of \$150,000 per year for 5 years, starting in Year 1.\\[0.5em]
+        \textbf{Project B:} an initial investment of \$400,000 is expected to produce this revenue stream: Year 1 = 0, Year 2 = \$50,000, Year 3 = \$200,000, Year 4 = \$300,000, and Year 5 = \$200,000.
+    \end{minipage}\\[0.5em]
+    \hspace*{0.7cm}
+    \begin{minipage}{\textwidth}
+        \textbf{Assume that a required rate of return for your company is 10\% and that inflation is expected to remain steady at 3\% for the life of the project. Which is the better investment? Why?}
+    \end{minipage}\\[1em]
+    By using the NPV formula shown in the chapter, we can calculate the Net Present Value for each projects and thus decide which one is better:
+    \begin{align*}
+        NPV_(Proj.A) &= I_o + \sum_{t=1}^{t}\frac{F_t}{(1+r+p_t)^t}\\
+            &= -500,000 + \sum_{t=1}^{5}\frac{150,000}{(1+0.10+0.03)^{t}}\\
+            &= 26,200\\
+        NPV_(Proj.B) &= -400,000 + \frac{0}{1.13^1} + \frac{50,000}{1.13^2} + \frac{200,000}{1.13^3} + \frac{300,000}{1.13^4} + \frac{200,000}{1.13^5}\\
+                     &= -400,000+0+39,160+138,659+183,993+108,589\\
+                     &= 70,401
+    \end{align*}
+    Thus, after comparing two projects, we can see that the revenue brought by the project B is higher, and thus we should choose project B. \\[1em]
+    \begin{minipage}{\textwidth}
+        \textbf{11. Projects W, X, Y, and Z are each being screened according to four criteria: potential return on investment, lack of technological risk, environmental “friendliness,” and service to community:}\\[0.5em]
+        \hspace*{1cm}\begin{minipage}{0.8\textwidth}
+            • Project W: return, high; lack of risk, medium; environment, medium; service, low.\\
+            • Project X: return, medium; lack of risk, high; environment, medium; service, low.\\
+            • Project Y: return, medium; lack of risk, medium; environment, high; service, high.\\
+            • Project Z: return, medium; lack of risk, medium; environment, high; service, low.
+        \end{minipage}\\[0.5em]
+        \textbf{Create a scheme for screening the projects, assuming equal weight for all criteria. Which project comes out best, which worst?}
+    \end{minipage}\\[1em]
+    In order to determine which project is the best or the worst, we first define the scoring scheme:\\[0.5em]
+    \hspace*{1cm} \textbf{High}: 3 Points\\
+    \hspace*{1cm} \textbf{Medium}: 2 Points\\
+    \hspace*{1cm} \textbf{Low}: 1 Points\\[0.5em]
+    Now we can calculate the score for each investment:
+    \begin{align*}
+        \text{\textbf{Project W:}} &= 3 (Return) + 2 (Risk) + 2 (Environment) + 1 (Service) = 8\\
+        \text{\textbf{Project x:}} &= 2 (Return) + 3 (Risk) + 2 (Environment) + 1 (Service) = 8\\
+        \text{\textbf{Project Y:}} &= 2 (Return) + 2 (Risk) + 3 (Environment) + 3 (Service) = 10\\
+        \text{\textbf{Project Z:}} &= 2 (Return) + 2 (Risk) + 3 (Environment) + 1 (Service) = 8
+    \end{align*}
+    Thus, from the above results, we can see that the best option is \textbf{Project Y}, and all other three project are similarly worse. \\[1em]
+    \textbf{12. For the previous four projects, assign scores of high = 3, medium = 2, and low = 1. Assume the criteria are weighted: potential return on investment = 0.3, lack of technological risk = 0.3, environmental “friendliness” = 0.3, and service to community = 0.1. Now which projects come out best and worst?}\\[0.5em]
+    For this one, we use the similar process, but each creteria is weighted. Thus, we have the following calculations:\\[0.5em]
+    \hspace*{1cm}\begin{minipage}{0.5\textwidth}
+        \textbf{Project W:}\\
+        \textbf{Return:} 3*0.3 = 0.9\\
+        \textbf{Risk:} 2*0.3 = 0.6\\
+        \textbf{Environment:} 2*0.3 = 0.6\\
+        \textbf{Service:} 1*0.1 = 0.1\\
+        \textbf{Total:} 0.9+0.6+0.6+0.1 = \textbf{\textit{2.2}}
+    \end{minipage}
+    \hfill
+    \hspace*{1cm}\begin{minipage}{0.5\textwidth}
+        \textbf{Project X:}\\
+        \textbf{Return:} 2*0.3 = 0.6\\
+        \textbf{Risk:} 3*0.3 = 0.9\\
+        \textbf{Environment:} 2*0.3 = 0.6\\
+        \textbf{Service:} 1*0.1 = 0.1\\
+        \textbf{Total:} 0.9+0.6+0.6+0.1 = \textbf{\textit{2.2}}
+    \end{minipage}\\[1em]
+    \hspace*{1cm}\begin{minipage}{0.5\textwidth}
+        \textbf{Project Y:}\\
+        \textbf{Return:} 2*0.3 = 0.6\\
+        \textbf{Risk:} 2*0.3 = 0.6\\
+        \textbf{Environment:} 3*0.3 = 0.9\\
+        \textbf{Service:} 3*0.1 = 0.3\\
+        \textbf{Total:} 0.6+0.6+0.9+0.3 = \textbf{\textit{2.4}}
+    \end{minipage}
+    \hfill
+    \hspace*{1cm}\begin{minipage}{0.5\textwidth}
+        \textbf{Project Z:}\\
+        \textbf{Return:} 2*0.3 = 0.6\\
+        \textbf{Risk:} 2*0.3 = 0.6\\
+        \textbf{Environment:} 3*0.3 = 0.9\\
+        \textbf{Service:} 1*0.1 = 0.1\\
+        \textbf{Total:} 0.6+0.6+0.9+0.1 = \textbf{\textit{2.2}}
+    \end{minipage}\\[0.5em]
+    Thus, again, from the above results, we can see that the best option is still \textbf{Project Y}, and all other three are similarly worse. 
+\end{document}
