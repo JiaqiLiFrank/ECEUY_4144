@@ -1,18 +1,21 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
-
+/* 
+  Sound sense:
+    PF1, ADC1
+  Light Sense:
+    PF0, ADC0
+*/
 void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(9600);
+  ADMUX = (1<<REFS0) | (1<<MUX2) | (1<<MUX1) | (1<<MUX0);
+  ADCSRA = (1<<ADEN) | (1<<ADATE);
+  ADCSRB = (1<<ADHSM);
+  DIDR0 |= (1<<ADC7D);
+  ADCSRA |= (1<<ADSC);
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
-
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  Serial.println(ADCW);
+  delay(10);
 }
