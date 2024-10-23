@@ -18,7 +18,7 @@ void setup() {
   // Set up the ADC
   ADMUX = (1<<REFS0); // Setting the Vcc as the reference
   ADCSRA = (1<<ADEN) | (1<<ADATE) | (1<<ADPS1) | (1<<ADPS0); // ADC Enable; Auto Trigger Enable; Prescaler 8
-  // ADCSRB at Free Running Mode
+  // ADCSRB at Free Running Mode, thus 0000
 }
 
 /*
