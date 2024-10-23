@@ -38,49 +38,35 @@ void setup() {
   // ADCSRB at Free Running Mode.
 }
 
-uint8_t beginTransitBayToOcean(){
-  // Either lock is open or a boat is already in transition
-  if ((PIND & (1<<PIND4)) || (PIND & (1<<PIND5)) || (PIND & (1<<PIND6))) {
-    return 0; 
-  }
-
-  // Open the Bay Lock Valve
-  PORTD |= (1<<PORTD0);
-
-  while(true) {
-  // Set up ADC0 - Bay Level
-  DIDR0 = (1<<ADC0D);
-  uint16_t bay_lv = ADCW;
-
-  // Set up ADC1 - Transition Level
-  ADMUX |= (1<<MUX0);
-  DIDR0 = (1<<ADC1D);
-  uint16_t transition_lv = ADCW;
-
-  if (bay_lv == transition_lv){
-      // Open the bay lock if bay level = transition level
-      PORTD |= (1<<PORTD2);
-      break;
-    }
-  }
-
-  // If the transition is occupied, jump out of the loop and close the lock
+/*
+  Continusly checking if the levels of the bay and the transition waterway are the same.
+  OUTPUT: 1 - same; 0 - not same.
+*/
+bool checkBayTransition(){
   while(true){
-    if(PIND & (1<<PIND6)){
-      // Close the bay lock
-      PORTD &= ~(1<<PORTD2);
-      break;
+    // Set up ADC0 - Bay Level
+    DIDR0 = (1<<ADC0D);
+    uint16_t bay_lv = ADCW;
+
+    // Set up ADC1 - Transition Level
+    ADMUX |= (1<<MUX0);
+    DIDR0 = (1<<ADC1D);
+    uint16_t transition_lv = ADCW;
+
+    if (bay_lv == transition_lv){
+      return true;
     }else{
       continue;
     }
   }
+  return false;
+}
 
-  // Check if the bay lock is closed. If closed, open the ocean valve
-  if(!(PIND & (1<<PIND2))){
-    // Open Ocean Valve
-    PORTD |= (1<<PORTD1);
-  }
-
+/*
+  Continusly checking if the levels of the the transition waterway and ocean are the same.
+  OUTPUT: 1 - same; 0 - not same.
+*/
+bool checkTransitionOcean(){
   while(true) {
   // Set up ADC1 - Transition Level
   ADMUX |= (1<<MUX0);
@@ -93,21 +79,63 @@ uint8_t beginTransitBayToOcean(){
   uint16_t ocean_lv = ADCW;
 
   if (ocean_lv == transition_lv){
-      // Open the ocean lock if ocean level = transition level
-      PORTD |= (1<<PORTD3);
-      break;
-    }
-  }
-
-  // If the transition is not occupied anymore, jump out of the loop and close the lock
-  while(true){
-    if(!(PIND & (1<<PIND6))){
-      // Close the ocean lock
-      PORTD &= ~(1<<PORTD3);
-      break;
+      return true;
     }else{
       continue;
     }
+  }
+  return false;
+}
+
+
+/*
+  Continusly checking if the transition waterway is occupied or not.
+  OUTPUT: 1 - occupied; 0 - not occupied. 
+*/
+bool isTransitionOccupied(){
+  // If the transition is occupied, jump out of the loop and close the lock
+  while(true){
+    if(PIND & (1<<PIND6)){
+      return true;
+    }else{
+      continue;
+    }
+  }
+  return false;
+}
+
+uint8_t beginTransitBayToOcean(){
+  // Either lock is open or a boat is already in transition
+  if ((PIND & (1<<PIND4)) || (PIND & (1<<PIND5)) || (PIND & (1<<PIND6))) {
+    return 0; 
+  }
+
+  // Open the Bay Lock Valve
+  PORTD |= (1<<PORTD0);
+
+  if(checkBayTransition){
+    // Open the bay lock if bay level = transition level
+    PORTD |= (1<<PORTD2);
+  }
+
+  if(isTransitionOccupied){
+    // Close the bay lock
+    PORTD &= ~(1<<PORTD2);
+  }
+
+  // Check if the bay lock is closed. If closed, open the ocean valve
+  if(!(PIND & (1<<PIND2))){
+    // Open Ocean Valve
+    PORTD |= (1<<PORTD1);
+  }
+
+  if(checkTransitionOcean){
+    // Open the ocean lock if ocean level = transition level
+    PORTD |= (1<<PORTD3);
+  }
+
+  if(!isTransitionOccupied){
+    PORTD &= ~(1<<PORTD3);
   }
 
   return 1;
@@ -123,33 +151,12 @@ uint8_t beginTransitOceanToBay(){
   // Open the Ocean Lock Valve
   PORTD |= (1<<PORTD1);
 
-  while(true) {
-  // Set up ADC2 - Ocean Level
-  ADMUX |= (1<<MUX1);
-  DIDR0 = (1<<ADC2D);
-  uint16_t ocean_lv = ADCW;
-
-  // Set up ADC1 - Transition Level
-  ADMUX |= (1<<MUX0);
-  DIDR0 = (1<<ADC1D);
-  uint16_t transition_lv = ADCW;
-
-  if (ocean_lv == transition_lv){
-      // Open the ocean lock if ocean level = transition level
-      PORTD |= (1<<PORTD3);
-      break;
-    }
+  if(checkTransitionOcean){
+    PORTD |= (1<<PORTD3);
   }
 
-  // If the transition is occupied, jump out of the loop and close the lock
-  while(true){
-    if(PIND & (1<<PIND6)){
-      // Close the ocean lock
-      PORTD &= ~(1<<PORTD3);
-      break;
-    }else{
-      continue;
-    }
+  if(isTransitionOccupied){
+    PORTD &= ~(1<<PORTD3);
   }
 
   // Check if the ocean lock is closed. If closed, open the bay valve
@@ -158,32 +165,12 @@ uint8_t beginTransitOceanToBay(){
     PORTD |= (1<<PORTD0);
   }
 
-  while(true) {
-  // Set up ADC1 - Transition Level
-  ADMUX |= (1<<MUX0);
-  DIDR0 = (1<<ADC1D);
-  uint16_t transition_lv = ADCW;
-
-  // Set up ADC0 - Bay Level
-  DIDR0 = (1<<ADC0D);
-  uint16_t bay_lv = ADCW;
-
-  if (bay_lv == transition_lv){
-      // Open the bay lock if bay level = transition level
-      PORTD |= (1<<PORTD2);
-      break;
-    }
+  if(checkBayTransition){
+    PORTD |= (1<<PORTD2);
   }
 
-  // If the transition is not occupied anymore, jump out of the loop and close the lock
-  while(true){
-    if(!(PIND & (1<<PIND6))){
-      // Close the Bay lock
-      PORTD &= ~(1<<PORTD2);
-      break;
-    }else{
-      continue;
-    }
+  if(!isTransitionOccupied){
+    PORTD &= ~(1<<PORTD2);
   }
 
   return 1;
