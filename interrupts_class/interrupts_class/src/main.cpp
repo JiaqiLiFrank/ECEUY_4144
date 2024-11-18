@@ -1,18 +1,24 @@
 #include <Arduino.h>
 
-// put function declarations here:
-int myFunction(int, int);
+// PD0, INT0, Detecting Transition Down
 
-void setup() {
-  // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+uint8_t FLAG = 0;
+
+// WHat written in the function will run once the INT0 falls from high to low
+ISR(INT0_vect){
+  FLAG = 1;
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
+void setup(){
+  // Falling Edgeing Setup
+  EICRA |= (1<<1);
+  // Arm INT0
+  EIMSK |= (1<<0);
+  Serial.begin(9600);
 }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+void loop(){
+  if(FLAG == 1){
+    Serial1.println("YES");
+  }
 }
