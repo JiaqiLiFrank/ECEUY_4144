@@ -13,8 +13,7 @@
 #define OUT_Z_L 0x2C
 #define OUT_Z_H 0x2D
 
-#define KEY_SIZE 250
-#define TOLERANCE 2000
+#define KEY_SIZE 280
 
 void SPI_Init() {
     pinMode(CS_PIN, OUTPUT);
@@ -28,7 +27,7 @@ void SPI_Init() {
 void ACC_Init() {
     digitalWrite(CS_PIN, LOW);              // Enable SPI communication
     SPI.transfer(CTRL_REG1 & 0x7F);         // Write command (clear MSB)
-    SPI.transfer(0x57 | CTRL_REG1);         // 0x57 = 01010111: X, Y, Z enable, 100Hz
+    SPI.transfer(0x77 | CTRL_REG1);         // 0x77 = 01110111: X, Y, Z enable, 100Hz
     digitalWrite(CS_PIN, HIGH);             // Disable SPI communication
 }
 
