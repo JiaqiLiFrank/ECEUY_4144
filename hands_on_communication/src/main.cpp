@@ -1,6 +1,6 @@
 #include <Arduino.h>
 
-void setup(){
+void USART_Init(){
   /*UCSR1A is set as default. 
     Normal transmission speed, 
     disable the multi-processor communication mode */
@@ -15,6 +15,25 @@ void setup(){
                           //       = (8MHz/(16*9600))-1 = 51.08
 }
 
-void loop(){
+void GetNextReceivedByte(){
 
+}
+
+void setup(){
+  USART_Init();
+}
+
+void loop(){
+  switch (GetNextReceivedByte())
+  {
+  case '1':
+  TransmitString("One\n", 4);
+  break ;
+  case'2':
+  TransmitString("Two\n", 4);
+  break ;
+  default :
+  TransmitString("Default\n", 8);
+  break ;
+  }
 }
