@@ -6,7 +6,7 @@ void USART_Init() {
   /* UCSR1A is set as default. 
      Normal transmission speed, 
      disable the multi-processor communication mode */
-  UCSR1A = 0x00;
+  UCSR1A = 0x00;            // Reset the UCSR1A
 
   UCSR1B = 0x00;            // Reset the UCSR1B
   UCSR1B |= (1 << RXCIE1) | // Enable RX Complete Interrupt
@@ -22,14 +22,17 @@ void USART_Init() {
 }
 
 ISR(USART1_RX_vect) {
-  receivedByte = UDR1; // Read the received byte
+  receivedByte = UDR1;      // Read the received byte
+  
 }
 
 void TransmitString(const char* str, uint8_t length) {
+  // Transmit byte by byte
   for (uint8_t i = 0; i < length; i++) {
     while (!(UCSR1A & (1 << UDRE1))) {
+      // Wait for the transmit buffer to be empty
     }
-    UDR1 = str[i]; // Send the next byte
+    UDR1 = str[i]; // Transmit the byte
   }
 }
 
@@ -38,7 +41,7 @@ char GetNextReceivedByte(){
   cli();               // Disable global interrupts
   byte = receivedByte; // Read the received byte
   receivedByte = 0;    // Clear the received byte after reading
-  sei();               // Re-enable global interrupts
+  sei();               // Enable global interrupts
   return byte;
 }
 
@@ -49,6 +52,7 @@ void setup() {
 
 void loop() {
   char currentByte = GetNextReceivedByte();
+  // Check if a byte is received
   if (currentByte != 0) {
     switch (currentByte) {
       case '1':
