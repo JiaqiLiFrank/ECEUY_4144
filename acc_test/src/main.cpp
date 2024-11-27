@@ -78,21 +78,6 @@ void recordKey(float SMV[]){
     Serial.println("Recording Finish");
 }
 
-// bool verifySMV(float SMV1[], float SMV2[]){
-//     int counter = 0;
-//     for(int i = 0; i < KEY_SIZE; i ++){
-//         if(abs(SMV2[i] - SMV1[i]) < abs(SMV1[i]*0.2)){
-//             counter++;
-//         }
-//     }
-//     Serial.println(counter);
-//     if(counter >= (0.9*KEY_SIZE)){
-//         return true;
-//     }else{
-//         return false;
-//     }
-// }
-
 bool verifySMV(float SMV1[], float SMV2[]) {
     float mean1 = 0, mean2 = 0;
     for (int i = 0; i < KEY_SIZE; i++) {
@@ -140,4 +125,3 @@ void loop() {
         Serial.println("-------------------");
     }
 }
-
