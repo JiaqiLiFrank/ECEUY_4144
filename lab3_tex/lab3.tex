@@ -1,0 +1,46 @@
+\documentclass{report}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage{latexsym}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{tikz}
+\usepackage{makecell}
+\usepackage{paracol}
+\usepackage{tabularx}
+\setlength{\parindent}{0pt}
+\geometry{a4paper,scale=0.75}
+%\renewcommand\thesubsection{\arabic{subsection}}
+\begin{document}
+\begin{center}
+    \textbf{\huge Lab Exercise \#3: Interrupt Subroutines and UART Serial Communication} \\[1em]
+    Frank Li $|$
+    \textbf{NetID:} jl13581 $|$
+    \textbf{Email:} \texttt{jl13581@nyu.edu} $|$
+    Section \textbf{C1} \\ [1em]
+\end{center}
+    {\Large \textbf{1. Background}}\\[0.5em]
+    On our Adafruit Circuit Playground Classic board, there is one USART channel, which is USART1. Universal Asynchronous Receiver-Transmitter (UART) is a hardware communication protocol that uses asynchronous serial communication with configurable speed. It is one of the simplest and most commonly used protocols. In UART communication, data is transmitted in the form of packets, which include a start bit, data bits, an optional parity bit, and stop bits. UART does not require a clock signal, making it simpler to implement compared to synchronous communication protocols. However, it is limited by the need for both devices to agree on the baud rate and the potential for data corruption if the baud rates are not perfectly matched.\\[1em]
+    {\Large \textbf{2. Experimental Procedure}}\\[0.5em]
+    {\Large \textbf{2.a UART Setup}}\\[0.5em]
+    For the first part of the lab, we set up the USART based on the datasheet of the microcontroller we are using, which is ATMega32U4. According to the lab manual, we know that the expected set ups are:
+    \begin{center}
+        \begin{tabular}{|c|c|}
+        \hline
+        \textbf{Parameter} & \textbf{Value} \\
+        \hline
+        Bit Rate & 9,600 \\
+        \hline
+        Data Bits & 8 \\
+        \hline
+        Parity & None \\
+        \hline
+        Stop Bits & 1 \\
+        \hline
+        Mode & Asynchronous/Normal Speed \\
+        \hline
+        \end{tabular}
+\end{center}
+\end{document}
