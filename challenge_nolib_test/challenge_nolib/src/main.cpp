@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include <SPI.h>
 #include <Adafruit_NeoPixel.h>
 
@@ -13,10 +14,34 @@
 #define OUT_Z_L 0x2C
 #define OUT_Z_H 0x2D
 
-#define KEY_SIZE 280
+#define KEY_SIZE 500
 
-#define PIXEL_PIN 17
-#define NUMPIXELS 10
+#define PIN 17         // Data pin connected to the NeoPixel
+#define NUMPIXELS 10  // Number of NeoPixels
+
+Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+void PIXEL_Init(){
+    strip.begin();
+    strip.setBrightness(5); // Set brightness to 50%
+    strip.show();
+}
+
+bool done = false;
+void pixelReady(){
+    while(!done){
+        for(int i = 0; i < 2; i ++){
+            strip.fill(strip.Color(255,255,255)); // Set white
+            strip.show();
+            delay(500);
+            strip.clear();
+            strip.show();
+            delay(200);
+        }
+        done = true;
+    }
+    strip.clear();
+    strip.show();
+}
 
 void SPI_Init() {
     pinMode(CS_PIN, OUTPUT);
@@ -42,47 +67,74 @@ uint8_t ACC_Read(uint8_t reg) {
     return value;
 }
 
-void readAccelerometer(int16_t &x, int16_t &y, int16_t &z) {
+void readAccelerometer(uint16_t &x, uint16_t &y, uint16_t &z) {
     uint8_t xl = ACC_Read(OUT_X_L);
     uint8_t xh = ACC_Read(OUT_X_H);
-    x = (int16_t)((xh << 8) | xl);
+    x = (uint16_t)((xh << 8) | xl);
 
     uint8_t yl = ACC_Read(OUT_Y_L);
     uint8_t yh = ACC_Read(OUT_Y_H);
-    y = (int16_t)((yh << 8) | yl);
+    y = (uint16_t)((yh << 8) | yl);
 
     uint8_t zl = ACC_Read(OUT_Z_L);
     uint8_t zh = ACC_Read(OUT_Z_H);
-    z = (int16_t)((zh << 8) | zl);
+    z = (uint16_t)((zh << 8) | zl);
     
 }
 
 
 void setup() {
-    Serial.begin(115200);
+    // Serial.begin(115200);
     SPI_Init();
     ACC_Init();
+    PIXEL_Init();
     DDRD &= ~(1<<PD4); // Left Button - Record Right Key
     DDRF &= ~(1<<PF6); // Right Button - Record Key to Check
-    pixels.begin();
 }
 
-float rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
+uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
 
-void recordKey(float SMV[]){
-    int16_t x, y, z;
-    Serial.println("Recording Start");
-    // unsigned long startTime = millis();
-    for(int i = 0; i < KEY_SIZE; i ++){
+void recordKey(uint16_t SMV[]) {
+    uint16_t x, y, z;
+    int count = 0;
+
+    for (int i = 0; i < KEY_SIZE; i++) {
+        // Read accelerometer data
         readAccelerometer(x, y, z);
-        SMV[i] = sqrtf((float)x * x + (float)y * y + (float)z * z);
-        delay(10);
-        Serial.println(SMV[i]);
+        SMV[i] = (uint16_t)(sqrtf((float)x * x + (float)y * y + (float)z * z));
+
+        float progress = (float)(i + 1) / KEY_SIZE;
+        int numPixelsToLight = progress * strip.numPixels();
+        strip.clear(); 
+        for (int j = 0; j < numPixelsToLight; j++) {
+            strip.setPixelColor(j, strip.Color(0, 0, 255)); // Set blue color
         }
-    Serial.println("Recording Finish");
+        strip.show();
+
+        delay(5);
+        Serial.print(">SMV: ");
+        Serial.println(SMV[i]);
+    }
 }
 
-bool verifySMV(float SMV1[], float SMV2[]) {
+void pixelFullGreen(){
+    strip.fill(strip.Color(0, 255, 0)); // Set green color
+    strip.show();
+    delay(1000);
+    strip.clear();
+    strip.show();
+}
+
+void pixelFullRed(){
+    strip.fill(strip.Color(255, 0, 0)); // Set red color
+    strip.show();
+    delay(1000);
+    strip.clear();
+    strip.show();
+}
+
+
+bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
     float mean1 = 0, mean2 = 0;
     for (int i = 0; i < KEY_SIZE; i++) {
         mean1 += SMV1[i];
@@ -104,10 +156,10 @@ bool verifySMV(float SMV1[], float SMV2[]) {
     }
 
     float correlation = numerator / sqrt(denominator1 * denominator2);
-    Serial.print("Correlation: ");
-    Serial.println(correlation);
+    // Serial.print("Correlation: ");
+    // Serial.println(correlation);
 
-    // Set a threshold for correlation (e.g., 0.8 for 80% similarity)
+    // Set a threshold for correlation
     if (correlation > 0.75) {
         return true;
     } else {
@@ -115,17 +167,19 @@ bool verifySMV(float SMV1[], float SMV2[]) {
     }
 }
 
-int main(){
+void loop() {
+    pixelReady();
     if(PIND & (1<<4)){
         recordKey(rightSMV);
+        pixelFullGreen();
     }
     if(PINF & (1<<6)){
         recordKey(checkSMV);
+        // pixelFullRed();
         if(verifySMV(rightSMV, checkSMV)){
-            Serial.println("SUCCESS");
-        }else{
-            Serial.println("FAIL");
+            pixelFullGreen();
+        } else {
+            pixelFullRed();
         }
-        Serial.println("-------------------");
     }
 }
