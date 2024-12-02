@@ -42,5 +42,48 @@
         Mode & Asynchronous/Normal Speed \\
         \hline
         \end{tabular}
-\end{center}
+    \end{center}
+    Based on the above information, and the datasheet, we can set up the registers as follows:
+    \begin{verbatim}
+        UCSR1A = 0x00; // UCSRA set as default. 
+        UCSR1B = 0x00; // UCSRB set as default.
+        UCSR1C = 0x00; // UCSRC set as default.
+    
+        UCSR1B |= (1<<RXEN1) | // Enable receiver
+                  (1<<TXEN1);  // Enable transmitter
+        UCSR1C |= (1<<UCSZ10) |
+                  (1<<UCSZ11); // 8-bit data
+        UBRR1 = 51; // UBRR1 = (fosc / (16 * Baud Rate)) - 1
+                    //       = (8MHz / (16 * 9600)) - 1 = 51.08 
+    \end{verbatim}
+    I first set UCSR1A, UCSR1B, and UCSR1C to zero to make sure they were set to defual before further modifications, then I set the bits RXEN1 and TXEN1 in UCSR1B to enable the receiver and transmitter, respectively. I also set the bits UCSZ10 and UCSZ11 in UCSR1C to set the data bits to 8. Finally, I set the UBRR1 register to 51 to set the baud rate to 9600. The calculation of the UBRR1 register is based on the formula given in the datasheet:
+    \begin{align*}
+        UBRR1 &= \frac{f_{osc}}{16 \times \text{Baud Rate}} - 1 \\
+              &= \frac{8\text{MHz}}{16 \times 9600} - 1 \\
+              &= 51.08
+    \end{align*}
+    In this case, based on the calculation result, I set the UBRR1 to 51. This code is for Team A, so the interrupt on receiver is not enabled. To enable it, we just need to add \texttt{UCSR1B |= (1<<RXCIE1)}.\\[1em]
+{\Large \textbf{2.b UART Receive ISR}}\\[0.5em]
+{\Large \textbf{2.c UART Transmit}}\\[0.5em]
+    Only Team A need to transmit data to the other board, thus the transmision function is only in Team A's code. When sending values via USART, we actually directly write the value to the register UDR1. As the lab manual required, when we pressed one button (right button in our implementation), the value "0x31" will be sent. Otherwise, the value "0x30" will be sent. In order to make the checking active at all time, we wrote it in the \texttt{loop()} function of Team A's board:
+    \begin{verbatim}
+        void loop() {
+            // Team A
+            if(PINF & (1<<PF6)){
+                PORTC |= (1<<PC7); // Set LED to on
+                UDR1 = 0x31;       // Send 1
+            } else {
+                PORTC &= ~(1<<PC7); // Set LED to off
+                UDR1 = 0x30;        // Send 0
+            }
+        } 
+    \end{verbatim}
+    According to the lab manual, when we pressed the button, the data is transmitted and the LED on Team A's board is also lighted up. \\[1em]
+{\Large \textbf{2.d Final Setup}}\\[0.5em]
+{\Large \textbf{3. Conlcusion}}\\[0.5em]
+    In this lab, we learned how to set up the USART on the ATMega32U4 microcontroller. We also learned how to set up the interrupt service routine for the USART receive interrupt. We also learned how to transmit data via USART and successfully fulfilled requirements and tasks in the lab manual. \\[1em]
+{\Large \textbf{4. Code}}\\[0.5em]
+{\Large \textbf{4.a Team A}}\\[0.5em]
+{\Large \textbf{4.b Team B}}\\[0.5em]
+
 \end{document}
