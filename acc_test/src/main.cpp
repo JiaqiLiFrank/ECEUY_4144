@@ -2,7 +2,7 @@
 #include <SPI.h>
 
 // Define SPI pins (PlatformIO default uses hardware SPI pins)
-#define CS_PIN 8  // Chip Select (adjust as per your wiring)
+#define CS_PIN 8  // Chip Select
 
 // LIS3DH Register Definitions
 #define CTRL_REG1 0x20
