@@ -15,6 +15,9 @@
 #define OUT_Z_H 0x2D
 
 #define KEY_SIZE 500
+#define BUFFER_SIZE 10
+uint16_t buffer[BUFFER_SIZE] = {0}; // Buffer to store the values
+uint16_t currentAvg;                // Current average value
 
 #define PIN 17         // Data pin connected to the NeoPixel
 #define NUMPIXELS 10  // Number of NeoPixels
@@ -92,6 +95,7 @@ void setup() {
     DDRF &= ~(1<<PF6); // Right Button - Record Key to Check
 }
 
+
 uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
 
 void recordKey(uint16_t SMV[]) {
@@ -99,9 +103,20 @@ void recordKey(uint16_t SMV[]) {
     int count = 0;
 
     for (int i = 0; i < KEY_SIZE; i++) {
+
+        for(int j = 0; j < BUFFER_SIZE - 1; j++){
+            buffer[i] = buffer[i + 1]; // Shift the buffer to the left
+            currentAvg += buffer[i];   // Sum up the values
+        }
         // Read accelerometer data
         readAccelerometer(x, y, z);
-        SMV[i] = (uint16_t)(sqrtf((float)x * x + (float)y * y + (float)z * z));
+        buffer[BUFFER_SIZE - 1] = (uint16_t)(sqrtf((float)x * x + 
+                                                   (float)y * y + 
+                                                   (float)z * z)); // Add the new value to the buffer
+        currentAvg += buffer[BUFFER_SIZE - 1];    // Sum up the values
+        currentAvg /= BUFFER_SIZE;                // Calculate the average value
+
+        SMV[i] = currentAvg;
 
         float progress = (float)(i + 1) / KEY_SIZE;
         int numPixelsToLight = progress * strip.numPixels();
