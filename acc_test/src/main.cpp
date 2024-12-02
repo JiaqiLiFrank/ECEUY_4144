@@ -56,7 +56,7 @@ void readAccelerometer(int16_t &x, int16_t &y, int16_t &z) {
 
 
 void setup() {
-    Serial.begin(115200);
+    // Serial.begin(115200);
     SPI_Init();
     ACC_Init();
     DDRD &= ~(1<<PD4); // Left Button - Record Right Key
@@ -67,7 +67,7 @@ float rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
 
 void recordKey(float SMV[]){
     int16_t x, y, z;
-    Serial.println("Recording Start");
+    // Serial.println("Recording Start");
     // unsigned long startTime = millis();
     for(int i = 0; i < KEY_SIZE; i ++){
         readAccelerometer(x, y, z);
@@ -75,7 +75,7 @@ void recordKey(float SMV[]){
         delay(10);
         Serial.println(SMV[i]);
         }
-    Serial.println("Recording Finish");
+    // Serial.println("Recording Finish");
 }
 
 bool verifySMV(float SMV1[], float SMV2[]) {
@@ -100,8 +100,8 @@ bool verifySMV(float SMV1[], float SMV2[]) {
     }
 
     float correlation = numerator / sqrt(denominator1 * denominator2);
-    Serial.print("Correlation: ");
-    Serial.println(correlation);
+    // Serial.print("Correlation: ");
+    // Serial.println(correlation);
 
     // Set a threshold for correlation (e.g., 0.8 for 80% similarity)
     if (correlation > 0.75) {
@@ -118,10 +118,10 @@ void loop() {
     if(PINF & (1<<6)){
         recordKey(checkSMV);
         if(verifySMV(rightSMV, checkSMV)){
-            Serial.println("SUCCESS");
+            // Serial.println("SUCCESS");
         }else{
-            Serial.println("FAIL");
+            // Serial.println("FAIL");
         }
-        Serial.println("-------------------");
+        // Serial.println("-------------------");
     }
 }
