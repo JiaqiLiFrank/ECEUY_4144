@@ -58,7 +58,7 @@ void SPI_Init() {
 void ACC_Init() {
     digitalWrite(CS_PIN, LOW);              // Enable SPI communication
     SPI.transfer(CTRL_REG1 & 0x7F);         // Write command (clear MSB)
-    // SPI.transfer(0x77 | CTRL_REG1);         // 0x77 = 01110111: X, Y, Z enable, 100Hz, normal mode
+    // SPI.transfer(0x77 | CTRL_REG1);      // 0x77 = 01110111: X, Y, Z enable, 100Hz, normal mode
     SPI.transfer(0x97 | CTRL_REG1);         // 0x97 = 10010111: X, Y, Z enable, 1.344 kHz, normal mode
     digitalWrite(CS_PIN, HIGH);             // Disable SPI communication
 }
