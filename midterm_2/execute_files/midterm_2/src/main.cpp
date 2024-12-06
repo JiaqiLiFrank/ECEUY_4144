@@ -1,3 +1,10 @@
+/* The schematic diagrams are uploaded. There are two versions:
+ *    1. using Sparkfun's schematic tool,
+ *    2. using the CAD tool
+ * I am not super confident with the CAD one, but I still want to try it.
+ * Please make the VERSION 1 as the main reference.
+ */
+
 #include <Arduino.h>
 #include <Wire.h>
 
