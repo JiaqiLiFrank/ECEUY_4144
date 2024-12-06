@@ -48,6 +48,7 @@ void setup()
   INT2_Init();          // Initialize INT2
   Serial.begin(115200); // Begin Serial communication
   MAX30100_Init();      // Initialize the MAX30100
+  sei();                // Enable global interrupts
 }
 
 void loop()
