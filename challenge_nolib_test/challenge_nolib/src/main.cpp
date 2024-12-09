@@ -19,25 +19,46 @@
 #define PIN 17         // Data pin connected to the NeoPixel
 #define NUMPIXELS 10  // Number of NeoPixels
 
+#define RECORDING_TIME 3000
+
+// Prototypes
+void PIXEL_Init();
+void pixelReady();
+void pixelFullGreen();
+void pixelFullRed();
+void TIMER_Init();
+void pixelRecording(int currentPixel);
+void SPI_Init();
+void ACC_Init();
+uint8_t ACC_Read(uint8_t reg);
+void readAccelerometer(int16_t &x, int16_t &y, int16_t &z);
+void recordKey(uint16_t SMV[], int addr);
+bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]);
+void pixelRecording(int currentPixel);
+
+
 Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+bool pixelReadyDone = false;
+bool recordingDone = false;
+uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
+
 void PIXEL_Init(){
     strip.begin();
     strip.setBrightness(5); // Set brightness to 50%
     strip.show();
 }
 
-bool done = false;
 void pixelReady(){
-    while(!done){
+    while(!pixelReadyDone){
         for(int i = 0; i < 2; i ++){
             strip.fill(strip.Color(255,255,255)); // Set white
             strip.show();
-            delay(500);
+            delay(1000);
             strip.clear();
             strip.show();
-            delay(200);
+            delay(500);
         }
-        done = true;
+        pixelReadyDone = true;
     }
     strip.clear();
     strip.show();
@@ -57,6 +78,38 @@ void pixelFullRed(){
     delay(1000);
     strip.clear();
     strip.show();
+}
+
+void TIMER_Init(){
+    DDRC |= (1 << PC7);
+    TCCR0A = (1 << WGM01);                                  // CTC mode
+    TCCR0B = (1 << CS02) | (1 << CS00);                     // Prescaler 1024
+    OCR0A = ((RECORDING_TIME / KEY_SIZE)/0.128);            // Compare match every 10ms
+
+    TIMSK0 |= (1 << OCIE0A);
+    sei();
+}
+
+uint16_t compare_count = 0;
+ISR(TIMER0_COMPA_vect) {
+    compare_count++;
+
+    uint16_t compare_top = OCR0A;
+    uint16_t compare_counter_limit = RECORDING_TIME / (compare_top * 0.128);
+
+    if (compare_count >= compare_counter_limit) {
+        compare_count = 0;
+        recordingDone = true;
+    }
+}
+
+void pixelRecording(int currentPixel){
+    strip.setPixelColor(currentPixel, strip.Color(currentPixel*25,currentPixel*20,255));
+    strip.show();
+    if(recordingDone){
+        strip.clear();
+        strip.show();
+    }
 }
 
 void SPI_Init() {
@@ -103,25 +156,32 @@ void setup() {
     SPI_Init();
     ACC_Init();
     PIXEL_Init();
+    TIMER_Init();
     DDRD &= ~(1<<PD4); // Left Button - Record Right Key
     DDRF &= ~(1<<PF6); // Right Button - Record Key to Check
 }
 
-uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
-
-void recordKey(uint16_t SMV[]){
+void recordKey(uint16_t SMV[]) {
     int16_t x, y, z;
-    // Serial.println("Recording Start");
-    // unsigned long startTime = millis();
-    for(int i = 0; i < KEY_SIZE; i ++){
+
+    // Capture KEY_SIZE samples as timer increments
+    while (compare_count < KEY_SIZE-1) {
+        uint8_t currentPixel = (compare_count * NUMPIXELS) / KEY_SIZE;
+        pixelRecording(currentPixel);
         readAccelerometer(x, y, z);
-        SMV[i] = (uint16_t)sqrtf((float)x * x + (float)y * y + (float)z * z);
-        delay(10);
-        Serial.println(SMV[i]);
-        }
-    Serial.println("Recording Finish");
+        SMV[compare_count] = (uint16_t)sqrtf((float)x * x + (float)y * y + (float)z * z);
+        delay(10);  // Small delay for sensor reading stability
+        Serial.println(compare_count);
+        Serial.println(SMV[compare_count]);
+    }
 }
 
+void reset(){
+    // Reset the timer and related counters
+    TCNT0 = 0;            // Reset hardware timer counter
+    compare_count = 0;    // Reset software counter
+    recordingDone = false;// Ensure we start fresh
+}
 
 bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
     float mean1 = 0, mean2 = 0;
@@ -159,12 +219,12 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
 void loop() {
     pixelReady();
     if(PIND & (1<<4)){
+        reset();
         recordKey(rightSMV);
-        pixelFullGreen();
     }
     if(PINF & (1<<6)){
+        reset();
         recordKey(checkSMV);
-        // pixelFullRed();
         if(verifySMV(rightSMV, checkSMV)){
             pixelFullGreen();
         } else {
