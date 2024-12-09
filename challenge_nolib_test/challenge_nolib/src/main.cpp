@@ -38,8 +38,8 @@ void pixelRecording(int currentPixel);
 
 
 Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-bool pixelReadyDone = false;
 bool recordingDone = false;
+bool whiteDone = false;
 uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
 
 void PIXEL_Init(){
@@ -48,17 +48,14 @@ void PIXEL_Init(){
     strip.show();
 }
 
-void pixelReady(){
-    while(!pixelReadyDone){
-        for(int i = 0; i < 2; i ++){
-            strip.fill(strip.Color(255,255,255)); // Set white
-            strip.show();
-            delay(1000);
-            strip.clear();
-            strip.show();
-            delay(500);
+void pixelFullWhite(){
+    int starttime = millis();
+    while(!whiteDone){
+        if(millis() - starttime > 500){
+            whiteDone = true;
         }
-        pixelReadyDone = true;
+        strip.fill(strip.Color(255, 255, 255)); // Set red color
+        strip.show();
     }
     strip.clear();
     strip.show();
@@ -73,9 +70,11 @@ void pixelFullGreen(){
 }
 
 void pixelFullRed(){
-    strip.fill(strip.Color(255, 0, 0)); // Set red color
-    strip.show();
-    delay(1000);
+    int starttime = millis();
+    while(millis() - starttime < 500){
+        strip.fill(strip.Color(255, 0, 0)); // Set red color
+        strip.show();
+    }
     strip.clear();
     strip.show();
 }
@@ -176,7 +175,7 @@ void recordKey(uint16_t SMV[]) {
     }
 }
 
-void reset(){
+void timingReset(){
     // Reset the timer and related counters
     TCNT0 = 0;            // Reset hardware timer counter
     compare_count = 0;    // Reset software counter
@@ -217,13 +216,13 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
 }
 
 void loop() {
-    pixelReady();
+    pixelFullWhite();
     if(PIND & (1<<4)){
-        reset();
+        timingReset();
         recordKey(rightSMV);
     }
     if(PINF & (1<<6)){
-        reset();
+        timingReset();
         recordKey(checkSMV);
         if(verifySMV(rightSMV, checkSMV)){
             pixelFullGreen();
