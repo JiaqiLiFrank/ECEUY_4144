@@ -40,6 +40,7 @@ void pixelRecording(int currentPixel);
 Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 bool recordingDone = false;
 uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
+// uint8_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
 
 
 void PIXEL_Init(){
@@ -136,7 +137,7 @@ void readAccelerometer(int16_t &x, int16_t &y, int16_t &z) {
 }
 
 void setup() {
-    // Serial.begin(115200);
+    Serial.begin(115200);
     SPI_Init();
     ACC_Init();
     PIXEL_Init();
@@ -162,11 +163,28 @@ void recordKey(uint16_t SMV[]) {
     strip.show();
 }
 
+// void recordKey(uint8_t SMV[]) {
+//     int16_t x, y, z;
+//     strip.clear();
+//     strip.show();
+//     // Capture KEY_SIZE samples as timer increments
+//     while (compare_count < KEY_SIZE-1) {
+//         uint8_t currentPixel = (compare_count * NUMPIXELS) / KEY_SIZE;
+//         pixelRecording(currentPixel);
+//         readAccelerometer(x, y, z);
+//         SMV[compare_count] = (uint8_t)(((uint16_t)sqrtf((float)x * x + (float)y * y + (float)z * z))/127);
+//         Serial.print(">SMV: ");
+//         Serial.println(SMV[compare_count]);
+//     }
+//     strip.clear();
+//     strip.show();
+// }
+
 void timingReset(){
     // Reset the timer and related counters
     TCNT0 = 0;            // Reset hardware timer counter
     compare_count = 0;    // Reset software counter
-    recordingDone = false;// Ensure we start fresh
+    recordingDone = false;// Ensure start fresh
 }
 
 
@@ -207,6 +225,44 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
         return false;
     }
 }
+
+// /* Correlation Calculation:
+//  * Factor = (Σ(Xi - Xmean) * (Yi - Ymean)) / sqrt(Σ(Xi - Xmean)^2 * Σ(Yi - Ymean)^2)
+// */
+// bool verifySMV(uint8_t SMV1[], uint8_t SMV2[]) {
+//     float mean1 = 0, mean2 = 0;
+//     for (int i = 0; i < KEY_SIZE; i++) {
+//         mean1 += SMV1[i];
+//         mean2 += SMV2[i];
+//     }
+//     mean1 /= KEY_SIZE;
+//     mean2 /= KEY_SIZE;
+
+//     float numerator = 0;
+//     float denominator1 = 0;
+//     float denominator2 = 0;
+
+//     for (int i = 0; i < KEY_SIZE; i++) {
+//         float diff1 = SMV1[i] - mean1;
+//         float diff2 = SMV2[i] - mean2;
+//         numerator += diff1 * diff2;
+//         denominator1 += diff1 * diff1;
+//         denominator2 += diff2 * diff2;
+//     }
+
+//     float correlation = numerator / sqrt(denominator1 * denominator2);
+//     Serial.print("Correlation: ");
+//     Serial.println(correlation);
+
+//     // Set a threshold for correlation
+//     if (correlation > 0.75) {
+//         pixelFullGreen();
+//         return true;
+//     } else {
+//         pixelFullRed();
+//         return false;
+//     }
+// }
 
 void loop() {
     if(PIND & (1<<4)){
