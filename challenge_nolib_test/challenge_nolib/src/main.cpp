@@ -39,43 +39,29 @@ void pixelRecording(int currentPixel);
 
 Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 bool recordingDone = false;
-bool whiteDone = false;
 uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
+
 
 void PIXEL_Init(){
     strip.begin();
     strip.setBrightness(5); // Set brightness to 50%
-    strip.show();
-}
-
-void pixelFullWhite(){
-    int starttime = millis();
-    while(!whiteDone){
-        if(millis() - starttime > 500){
-            whiteDone = true;
-        }
-        strip.fill(strip.Color(255, 255, 255)); // Set red color
+    for(int i = 0; i < 2; i++){
+        strip.fill(strip.Color(255, 255, 255)); // Set white color
         strip.show();
+        delay(500);
+        strip.clear();
+        strip.show();
+        delay(500);
     }
-    strip.clear();
-    strip.show();
 }
 
 void pixelFullGreen(){
     strip.fill(strip.Color(0, 255, 0)); // Set green color
     strip.show();
-    delay(1000);
-    strip.clear();
-    strip.show();
 }
 
 void pixelFullRed(){
-    int starttime = millis();
-    while(millis() - starttime < 500){
-        strip.fill(strip.Color(255, 0, 0)); // Set red color
-        strip.show();
-    }
-    strip.clear();
+    strip.fill(strip.Color(255, 0, 0)); // Set red color
     strip.show();
 }
 
@@ -97,7 +83,6 @@ ISR(TIMER0_COMPA_vect) {
     uint16_t compare_counter_limit = RECORDING_TIME / (compare_top * 0.128);
 
     if (compare_count >= compare_counter_limit) {
-        compare_count = 0;
         recordingDone = true;
     }
 }
@@ -106,7 +91,7 @@ void pixelRecording(int currentPixel){
     strip.setPixelColor(currentPixel, strip.Color(currentPixel*25,currentPixel*20,255));
     strip.show();
     if(recordingDone){
-        strip.clear();
+        strip.fill(strip.Color(0, 0, 0)); // Set black color
         strip.show();
     }
 }
@@ -162,17 +147,19 @@ void setup() {
 
 void recordKey(uint16_t SMV[]) {
     int16_t x, y, z;
-
+    strip.clear();
+    strip.show();
     // Capture KEY_SIZE samples as timer increments
     while (compare_count < KEY_SIZE-1) {
         uint8_t currentPixel = (compare_count * NUMPIXELS) / KEY_SIZE;
         pixelRecording(currentPixel);
         readAccelerometer(x, y, z);
         SMV[compare_count] = (uint16_t)sqrtf((float)x * x + (float)y * y + (float)z * z);
-        delay(10);  // Small delay for sensor reading stability
-        Serial.println(compare_count);
+        Serial.print(">SMV: ");
         Serial.println(SMV[compare_count]);
     }
+    strip.clear();
+    strip.show();
 }
 
 void timingReset(){
@@ -209,14 +196,15 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
 
     // Set a threshold for correlation
     if (correlation > 0.75) {
+        pixelFullGreen();
         return true;
     } else {
+        pixelFullRed();
         return false;
     }
 }
 
 void loop() {
-    pixelFullWhite();
     if(PIND & (1<<4)){
         timingReset();
         recordKey(rightSMV);
@@ -224,10 +212,7 @@ void loop() {
     if(PINF & (1<<6)){
         timingReset();
         recordKey(checkSMV);
-        if(verifySMV(rightSMV, checkSMV)){
-            pixelFullGreen();
-        } else {
-            pixelFullRed();
-        }
+        cli();
+        verifySMV(rightSMV, checkSMV);
     }
 }
