@@ -14,7 +14,7 @@
 #define OUT_Z_L 0x2C
 #define OUT_Z_H 0x2D
 
-#define KEY_SIZE 200
+#define KEY_SIZE 500
 
 #define PIN 17         // Data pin connected to the NeoPixel
 #define NUMPIXELS 10  // Number of NeoPixels
@@ -169,6 +169,10 @@ void timingReset(){
     recordingDone = false;// Ensure we start fresh
 }
 
+
+/* Correlation Calculation:
+ * Factor = (Σ(Xi - Xmean) * (Yi - Ymean)) / sqrt(Σ(Xi - Xmean)^2 * Σ(Yi - Ymean)^2)
+*/
 bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
     float mean1 = 0, mean2 = 0;
     for (int i = 0; i < KEY_SIZE; i++) {
@@ -206,10 +210,14 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[]) {
 
 void loop() {
     if(PIND & (1<<4)){
+        sei();
+        delay(500);
         timingReset();
         recordKey(rightSMV);
     }
     if(PINF & (1<<6)){
+        sei();
+        delay(500);
         timingReset();
         recordKey(checkSMV);
         cli();
