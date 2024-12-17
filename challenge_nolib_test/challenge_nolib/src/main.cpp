@@ -2,14 +2,14 @@
 #include <SPI.h>
 #include <Adafruit_NeoPixel.h>
 
-// Define SPI pins (PlatformIO default uses hardware SPI pins)
-#define CS_PIN 8 // Chip Select
+// SPI CS pin based on the schematic
+#define CS_PIN 8
 
-// LIS3DH Register Definitions
-#define CTRL_REG1 0x20
-#define OUT_X_L 0x28
-#define OUT_X_H 0x29
-#define OUT_Y_L 0x2A
+// 
+#define CTRL_REG1   0x20
+#define OUT_X_L     0x28
+#define OUT_X_H     0x29
+#define OUT_Y_L     0x2A
 #define OUT_Y_H 0x2B
 #define OUT_Z_L 0x2C
 #define OUT_Z_H 0x2D
@@ -44,7 +44,7 @@ uint16_t rightSMV[KEY_SIZE], checkSMV[KEY_SIZE];
 void PIXEL_Init()
 {
     strip.begin();
-    strip.setBrightness(5); // Set brightness to 50%
+    strip.setBrightness(100); // Set brightness to 50%
     for (int i = 0; i < 2; i++)
     {
         strip.fill(strip.Color(255, 255, 255)); // Set white color
@@ -157,26 +157,6 @@ void setup()
     DDRF &= ~(1 << PF6); // Right Button - Record Key to Check
 }
 
-// Original recordKey() function (commented out)
-/*
-void recordKey(uint16_t SMV[]) {
-    int16_t x, y, z;
-    strip.clear();
-    strip.show();
-    // Capture KEY_SIZE samples as timer increments
-    while (compare_count < KEY_SIZE-1) {
-        uint8_t currentPixel = (compare_count * NUMPIXELS) / KEY_SIZE;
-        pixelRecording(currentPixel);
-        readAccelerometer(x, y, z);
-        SMV[compare_count] = (uint16_t)sqrtf((float)x * x + (float)y * y + (float)z * z);
-        Serial.print(">SMV: ");
-        Serial.println(SMV[compare_count]);
-    }
-    strip.clear();
-    strip.show();
-}
-*/
-
 void recordKey(uint16_t SMV[])
 {
     int16_t x, y, z;
@@ -224,23 +204,6 @@ void recordKey(uint16_t SMV[])
     strip.show();
 }
 
-// void recordKey(uint8_t SMV[]) {
-//     int16_t x, y, z;
-//     strip.clear();
-//     strip.show();
-//     // Capture KEY_SIZE samples as timer increments
-//     while (compare_count < KEY_SIZE-1) {
-//         uint8_t currentPixel = (compare_count * NUMPIXELS) / KEY_SIZE;
-//         pixelRecording(currentPixel);
-//         readAccelerometer(x, y, z);
-//         SMV[compare_count] = (uint8_t)(((uint16_t)sqrtf((float)x * x + (float)y * y + (float)z * z))/127);
-//         Serial.print(">SMV: ");
-//         Serial.println(SMV[compare_count]);
-//     }
-//     strip.clear();
-//     strip.show();
-// }
-
 void timingReset()
 {
     // Reset the timer and related counters
@@ -281,7 +244,7 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[])
     Serial.println(correlation);
 
     // Set a threshold for correlation
-    if (correlation > 0.75)
+    if (correlation > 0.80)
     {
         pixelFullGreen();
         return true;
@@ -292,44 +255,6 @@ bool verifySMV(uint16_t SMV1[], uint16_t SMV2[])
         return false;
     }
 }
-
-// /* Correlation Calculation:
-//  * Factor = (Σ(Xi - Xmean) * (Yi - Ymean)) / sqrt(Σ(Xi - Xmean)^2 * Σ(Yi - Ymean)^2)
-// */
-// bool verifySMV(uint8_t SMV1[], uint8_t SMV2[]) {
-//     float mean1 = 0, mean2 = 0;
-//     for (int i = 0; i < KEY_SIZE; i++) {
-//         mean1 += SMV1[i];
-//         mean2 += SMV2[i];
-//     }
-//     mean1 /= KEY_SIZE;
-//     mean2 /= KEY_SIZE;
-
-//     float numerator = 0;
-//     float denominator1 = 0;
-//     float denominator2 = 0;
-
-//     for (int i = 0; i < KEY_SIZE; i++) {
-//         float diff1 = SMV1[i] - mean1;
-//         float diff2 = SMV2[i] - mean2;
-//         numerator += diff1 * diff2;
-//         denominator1 += diff1 * diff1;
-//         denominator2 += diff2 * diff2;
-//     }
-
-//     float correlation = numerator / sqrt(denominator1 * denominator2);
-//     Serial.print("Correlation: ");
-//     Serial.println(correlation);
-
-//     // Set a threshold for correlation
-//     if (correlation > 0.75) {
-//         pixelFullGreen();
-//         return true;
-//     } else {
-//         pixelFullRed();
-//         return false;
-//     }
-// }
 
 void loop()
 {
