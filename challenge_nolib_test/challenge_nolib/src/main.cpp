@@ -1,3 +1,16 @@
+/* Introduction to Embedded System and Design, 
+ * Fall 2024 Final Project: Embedded Sentry
+ * Group Members: Ariel Wang， Frank Li, Owen Wang
+
+ * This project is supposed to simulate a security system that records users' gestures as passwords. 
+ * We read the data from the accelerometer integrated in the Adafruit Circuit Playground Classic board, 
+ * calculate to store them into Single Magnitude Vector (SMV) arrays, 
+ * and compare the SMV arrays to verify the user's identity using the correlation formula. 
+ * If the passqword is correct, then the NeoPixel strip will light up in green, 
+ * otherwise it will light up in red. 
+*/
+
+
 #include <Arduino.h>
 #include <SPI.h>
 #include <Adafruit_NeoPixel.h>
